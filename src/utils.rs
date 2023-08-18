@@ -2,16 +2,25 @@ use chrono::prelude::*;
 use notify_rust::Notification;
 use std::collections::VecDeque;
 
-pub fn high_cpu_alert(vec: &VecDeque<f32>, last_notified: &mut i64) {
-    let minute_since_last_notification: bool = Local::now().timestamp() - *last_notified > 60;
+pub fn usage_alert(vec: &VecDeque<f32>, last_notified: &mut u32, last_notification_type: &mut String) {
+    let minute_since_last_notification: bool = Local::now().timestamp() as u32 - *last_notified > 60;
 
-    if minute_since_last_notification && avg_higher_than(vec, 50) {
-        *last_notified = Local::now().timestamp() as i64;
-        notify("High CPU usage alert!");
+    if minute_since_last_notification {
+        if avg_higher_than(vec, 50) {
+            *last_notified = Local::now().timestamp() as u32;
+            *last_notification_type = String::from("high");
+            notify("High CPU usage alert!");
+        } else {
+            if last_notification_type == "high" {    
+                *last_notified = Local::now().timestamp() as u32;
+                *last_notification_type = String::from("low");
+                notify("CPU usage back to normal");
+            }
+        }
     }
 }
 
-pub fn avg_higher_than(vec_deque: &VecDeque<f32>, avg: i32) -> bool {
+fn avg_higher_than(vec_deque: &VecDeque<f32>, avg: i32) -> bool {
     let mut total: f32 = 0.0;
     for value in vec_deque {
         total = total + value

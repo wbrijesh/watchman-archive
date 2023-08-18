@@ -1,4 +1,3 @@
-use chrono::prelude::*;
 use std::collections::VecDeque;
 use std::thread::sleep;
 use std::time::Duration;
@@ -9,7 +8,8 @@ mod utils;
 fn main() {
     let mut sys = System::new();
     let mut cpu_usage_history: VecDeque<f32> = VecDeque::new();
-    let mut last_notified: i64 = Local::now().timestamp() - 60;
+    let mut last_notified: u32 = 0;
+    let mut last_notification_type: String = String::from("");
 
     loop {
         sys.refresh_cpu();
@@ -25,7 +25,7 @@ fn main() {
             cpu_usage_history.pop_front();
         }
 
-        utils::high_cpu_alert(&cpu_usage_history, &mut last_notified);
+        utils::usage_alert(&cpu_usage_history, &mut last_notified, &mut last_notification_type);
 
         println!("history: {:#?}", cpu_usage_history);
 
